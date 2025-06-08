@@ -1,23 +1,52 @@
-<html lang="ja">
+<!DOCTYPE html>
+<html>
 <head>
+    <title>郵便番号検索</title>
     <meta charset="utf-8">
-    <title>演習課題5-1：郵便番号APIの呼び出しテスト</title>
+    <script>
+        const search_url = 'https://zipcloud.ibsnet.co.jp/api/search'; // 郵便番号APIのURL
+
+        function search() {
+            let zipInput = document.getElementById('zip_input');
+            let zip = zipInput.value.replace('-', ''); // ハイフン削除
+
+            fetch(`${search_url}?zipcode=${zip}`)//fetch apiをでリクエストを送る
+                .then(response => response.json())
+                .then(data => {
+                    const resultCell = document.getElementById('result_cell');
+                    const kanaCell = document.getElementById('kana_cell');
+
+                    if (!data.results || data.results.length === 0) {
+                        resultCell.style.color = 'red';
+                        resultCell.textContent = data.message || '該当する住所が見つかりませんでした';
+                    } else {
+                        const result = data.results[0];
+                        const address = result.address1 + result.address2 + result.address3;
+                        const kana = result.kana1 + result.kana2 + result.kana3;
+                            //受け取った住所カナを出力
+                        resultCell.style.color = 'black';
+                        resultCell.textContent = address;
+                        kanaCell.style.color = 'black';
+                        kanaCell.textContent = kana;
+                    }
+                })
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('search_button').addEventListener('click', search);//クリックするとサーチ関数を呼び出す
+        });
+    </script>
 </head>
 <body>
-    <h1 id="msg">郵便番号API</h1>
-    <form name="apiform"><p>
-        郵便番号：<input type="text" name="zipcode">
-        <button type="button" id="btn1" onclick="zip_api(this.form)">実行</button>
-    </p></form>
-    
-    <div id="result">結果はここに表示</div>
-    <script>
-        async function zip_api(myForm) {
-            const endpoint = "https://zipcloud.ibsnet.co.jp/api/search";
-            // ここにコードを書く
-            // zipcloudのAPI呼び出して結果を表示する
-            document.getElementById("result").innerHTML =  myForm.zipcode.value; // 現状ではそのまま表示しているだけ
-        }
-    </script>
+    <table>
+        <tr>
+            <h1>郵便番号API</h1>
+            <td>郵便番号を入力→</td>
+            <td><input id="zip_input" type="text"></td>
+            <td><button id="search_button">実行</button></td>
+        </tr>
+    </table>
+    <div id="result_cell"></div>
+    <div id="kana_cell"></div>
 </body>
 </html>
